@@ -1,0 +1,9 @@
+Payload/
+*.ipa
+ios/app/.theos/
+node_modules/
+.DS_Store
+
+ios/app/Resources/www/
+public/thumbs/
+public/media/
