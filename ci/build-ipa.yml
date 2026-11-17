@@ -1,0 +1,65 @@
+# 复制此文件内容到 .github/workflows/build-ipa.yml 即可启用云端编译
+# （GitHub token 缺 workflow scope 时，API 无法直接写 .github/workflows/）
+
+name: build-ipa
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - 'data/**'
+      - 'tools/**'
+      - 'ios/**'
+      - '.github/workflows/build-ipa.yml'
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 装依赖
+        run: brew install ldid xz ffmpeg || true
+
+      - name: 装 Theos
+        run: |
+          git clone -q --recursive https://github.com/theos/theos.git "$RUNNER_TEMP/theos"
+          echo "THEOS=$RUNNER_TEMP/theos" >> $GITHUB_ENV
+          echo "$RUNNER_TEMP/theos/bin" >> $GITHUB_PATH
+
+      - name: 生成封面与示例片源
+        run: node tools/prepare.js
+
+      - name: 生成离线网页包
+        run: node tools/make-www.js
+
+      - name: 编译 .app
+        run: |
+          cd ios/app
+          make clean || true
+          make -j"$(sysctl -n hw.ncpu)" 2>&1 | tail -60
+
+      - name: 组装 ipa
+        run: |
+          APP="$(find ios/app/.theos -name 'PeachTube.app' -type d | head -1)"
+          if [ -z "$APP" ]; then echo '::error::没编出 PeachTube.app'; exit 1; fi
+          echo "app = $APP"
+          rm -rf Payload && mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry PeachTube.ipa Payload
+          ls -lh PeachTube.ipa
+          unzip -l PeachTube.ipa | head -20
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: PeachTube-ipa
+          path: PeachTube.ipa
+          retention-days: 30
