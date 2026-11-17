@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>蜜桃TUBE · 深夜频道</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <a class="logo" href="/"><span class="dot"></span>蜜桃<span class="pk">TUBE</span></a>
+    <form class="search" id="searchForm" autocomplete="off">
+      <input id="q" type="search" placeholder="搜片名、标签…" enterkeyhint="search">
+      <button aria-label="搜索">⌕</button>
+    </form>
+    <div class="badge18">18+</div>
+  </div>
+  <nav class="chips" id="chips"></nav>
+</header>
+
+<main>
+  <section class="hero" id="hero"></section>
+
+  <section class="row" id="recentRow" hidden>
+    <div class="row-hd"><h2>继续观看</h2></div>
+    <div class="rail" id="recent"></div>
+  </section>
+
+  <section class="row">
+    <div class="row-hd">
+      <h2 id="listTitle">最新上架</h2>
+      <div class="sorts">
+        <button class="sort on" data-sort="new">最新</button>
+        <button class="sort" data-sort="hot">最热</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" hidden>这个分类还没片，换一个试试</p>
+  </section>
+</main>
+
+<footer class="ftr">
+  <p>蜜桃TUBE · 仅限 18 岁以上成年人观看</p>
+  <p class="dim">所有影片均为演出</p>
+</footer>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab on" data-tab="home"><i>⌂</i><span>首页</span></button>
+  <button class="tab" data-tab="cat"><i>▦</i><span>分类</span></button>
+  <button class="tab" data-tab="hot"><i>⚡</i><span>榜单</span></button>
+  <button class="tab" data-tab="mine"><i>☺</i><span>我的</span></button>
+</nav>
+
+<div class="player" id="player" hidden>
+  <div class="player-in">
+    <button class="close" id="closePlayer" aria-label="关闭">✕</button>
+    <div class="stage">
+      <video id="video" playsinline controls preload="metadata"></video>
+      <div class="stage-tip" id="stageTip">正在载入…</div>
+    </div>
+    <div class="meta">
+      <h1 id="pTitle"></h1>
+      <div class="sub"><span id="pViews"></span><span id="pDur"></span><span id="pCat"></span></div>
+      <div class="tags" id="pTags"></div>
+      <p class="desc" id="pDesc"></p>
+    </div>
+    <div class="row-hd"><h2>相关推荐</h2></div>
+    <div class="list" id="pRel"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
