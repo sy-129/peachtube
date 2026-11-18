@@ -1,0 +1,76 @@
+name: build-ipa
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - 'public/**'
+      - 'data/**'
+      - 'tools/**'
+      - 'ios/**'
+      - '.github/workflows/build-ipa.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # macOS runner 自带 Xcode，Theos 在这里编 arm64 真机包
+    runs-on: macos-14
+    timeout-minutes: 20
+
+    steps:
+      - name: 拉代码
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 装依赖（ldid / xz）
+        run: brew install ldid xz || true
+
+      - name: 装 Theos
+        run: |
+          git clone --quiet --recursive https://github.com/theos/theos.git "$RUNNER_TEMP/theos"
+          mkdir -p "$RUNNER_TEMP/theos/sdks"
+          echo "THEOS=$RUNNER_TEMP/theos" >> "$GITHUB_ENV"
+          echo "$RUNNER_TEMP/theos/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/theos/bin/ldid" -v || true
+
+      - name: 生成离线网页包
+        run: node tools/make-www.js
+
+      - name: 编译 .app
+        run: |
+          cd ios/app
+          make clean || true
+          make -j"$(sysctl -n hw.ncpu)" 2>&1 | tail -40
+
+      - name: 组装 ipa
+        run: |
+          APP="$(find ios/app/.theos -name 'PeachTube.app' -type d | head -1)"
+          if [ -z "$APP" ]; then echo "::error::没编出 PeachTube.app"; exit 1; fi
+          echo "app = $APP"
+          rm -rf ios/build && mkdir -p ios/build/Payload
+          cp -R "$APP" ios/build/Payload/
+          # 未签名版：Sideloadly / AltStore / TrollStore 会自己重签
+          cd ios/build && zip -qry PeachTube.ipa Payload
+          ls -lh PeachTube.ipa
+          unzip -l PeachTube.ipa | head -20
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: PeachTube-ipa
+          path: ios/build/PeachTube.ipa
+          retention-days: 30
+
+      - name: 打 tag 时顺便发 Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ios/build/PeachTube.ipa
+          generate_release_notes: true
