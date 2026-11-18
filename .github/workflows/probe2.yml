@@ -1,0 +1,20 @@
+name: probe-theos-linux
+on: [workflow_dispatch, push]
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq git make curl xz-utils libssl-dev
+      - name: install theos
+        run: |
+          export THEOS=$HOME/theos
+          git clone -q --recursive https://github.com/theos/theos.git $THEOS
+          ls $THEOS | head
+      - name: toolchain
+        run: |
+          export THEOS=$HOME/theos
+          $THEOS/bin/install-theos --help || true
+          echo "---"
+          ls $THEOS/toolchain 2>/dev/null || echo "no toolchain dir"
+          which clang || true
+          clang --version || true
