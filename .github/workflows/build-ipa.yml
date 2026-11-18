@@ -17,7 +17,7 @@ permissions:
 jobs:
   build:
     # macOS runner 自带 Xcode，Theos 在这里编 arm64 真机包
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 20
 
     steps:
