@@ -30,7 +30,7 @@ jobs:
           node-version: '20'
 
       - name: 装依赖（ldid / xz）
-        run: brew install ldid xz || true
+        run: brew install ldid xz ffmpeg || true
 
       - name: 装 Theos
         run: |
@@ -39,6 +39,9 @@ jobs:
           echo "THEOS=$RUNNER_TEMP/theos" >> "$GITHUB_ENV"
           echo "$RUNNER_TEMP/theos/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/theos/bin/ldid" -v || true
+
+      - name: 生成封面与片源
+        run: node tools/prepare.js
 
       - name: 生成离线网页包
         run: node tools/make-www.js
